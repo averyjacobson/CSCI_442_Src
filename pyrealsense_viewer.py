@@ -40,8 +40,28 @@ cv2.namedWindow("Assignment3")
 
 cv2.moveWindow("Assignment3", 0,0)
 
+window = np.zeros([480,480,3],dtype=np.uint8) 
+
+
+#Intilaize Tracker
+cap = cv2.VideoCapture(1)
+#ok, frame = cap.read()
+
+tracker = cv2.TrackerKCF_create() #maybe in loop
+
+# Define an initial bounding box
+boundingBox = (287, 23, 86, 320)
+
+
 # Start streaming
 pipeline.start(config)
+frames = pipeline.wait_for_frames()
+depth_frame = frames.get_depth_frame()
+track_image = np.asanyarray(depth_frame.get_data())
+
+
+ok = tracker.init(track_image, boundingBox)
+
 
 try:
     while True:
@@ -51,7 +71,7 @@ try:
         depth_frame = frames.get_depth_frame()
         color_frame = frames.get_color_frame()
         if not depth_frame or not color_frame:
-            continue
+            break
 
         # Convert images to numpy arrays
         depth_image = np.asanyarray(depth_frame.get_data())
@@ -71,16 +91,35 @@ try:
         else:
             images = np.hstack((color_image, depth_colormap))
 
+        track_image = depth_colormap
+        
+
         #Creating black window dimensions
         # black = np.zeros([images.shape[0],images.shape[1],3],dtype=np.uint8) 
         black = np.zeros([300,images.shape[1],3],dtype=np.uint8) 
         # attach lower black window
         window = np.vstack((images, black))
 
+        #tracker
+        #if track_image.
+        boundingBox = tracker.update(track_image)
+
+        if ok:
+             # Tracking success
+            p1 = (int(boundingBox[0]), int(boundingBox[1]))
+            p2 = (int(boundingBox[0] + boundingBox[2]), int(boundingBox[1] + boundingBox[3]))
+            cv2.rectangle(track_image, p1, p2, (255,0,0), 2, 1)
+        else :
+            # Tracking failure
+            cv2.putText(track_image, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
+
+
         
         
         # Show images
         cv2.imshow('Assignment3', window)
+        cv2.imshow('Tracking', track_image)
+
 
         #exit
         k = cv2.waitKey(1)
