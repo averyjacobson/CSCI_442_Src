@@ -35,6 +35,11 @@ if device_product_line == 'L500':
 else:
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
+#Set window positions
+cv2.namedWindow("Assignment3")
+
+cv2.moveWindow("Assignment3", 0,0)
+
 # Start streaming
 pipeline.start(config)
 
@@ -65,17 +70,22 @@ try:
             images = np.hstack((resized_color_image, depth_colormap))
         else:
             images = np.hstack((color_image, depth_colormap))
-        
-        black = np.zeros([1080,480,1],dtype=np.uint8) 
-        #black = cv2.resize(black, dsize=(color_image[1], color_image[0]), interpolation=cv2.INTER_AREA)
-        # Create Black Window Below.
-        # images = np.vstack(black)
 
+        #Creating black window dimensions
+        # black = np.zeros([images.shape[0],images.shape[1],3],dtype=np.uint8) 
+        black = np.zeros([300,images.shape[1],3],dtype=np.uint8) 
+        # attach lower black window
+        window = np.vstack((images, black))
+
+        
+        
         # Show images
-        cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-        cv2.imshow('RealSense', images)
-        cv2.imshow('Black', black)
-        cv2.waitKey(1)
+        cv2.imshow('Assignment3', window)
+
+        #exit
+        k = cv2.waitKey(1)
+        if k == 27:
+           break
 
 finally:
 
