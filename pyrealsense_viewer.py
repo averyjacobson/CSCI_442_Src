@@ -71,7 +71,7 @@ try:
         depth_frame = frames.get_depth_frame()
         color_frame = frames.get_color_frame()
         if not depth_frame or not color_frame:
-            break
+            continue
 
         # Convert images to numpy arrays
         depth_image = np.asanyarray(depth_frame.get_data())
@@ -91,18 +91,28 @@ try:
         else:
             images = np.hstack((color_image, depth_colormap))
 
-        track_image = depth_colormap
+        track_image = color_image
         
 
         #Creating black window dimensions
         # black = np.zeros([images.shape[0],images.shape[1],3],dtype=np.uint8) 
         black = np.zeros([300,images.shape[1],3],dtype=np.uint8) 
+
+        test = np.zeros([300,images.shape[1],3],dtype=np.uint8) 
+
         # attach lower black window
         window = np.vstack((images, black))
 
         #tracker
         #if track_image.
-        boundingBox = tracker.update(track_image)
+        track_image = np.asanyarray(track_image)
+        #print("Printing Image\n",track_image)
+        try:
+            ok, boundingBox = tracker.update(track_image)
+            print("success",ok)
+        except:
+            print("empty matrix")
+
 
         if ok:
              # Tracking success
